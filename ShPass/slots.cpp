@@ -12,12 +12,6 @@ void winodw::slotCalculateClicked() {
     int B = endPointB->text().toInt(&isBok);
     if (!isAok || A < 0 || !isBok || B < 0 || model1->columnCount() <= 0) return;
     QVector<QVector<double>> mat = model1->GetVectoredMat();
-//    mat.append(QVector<double>{0, 7, 9, 0, 0, 14});
-//    mat.append(QVector<double>{7, 0, 10, 15, 0, 0});
-//    mat.append(QVector<double>{9, 10, 0, 11, 0, 2});
-//    mat.append(QVector<double>{0, 15, 11, 0, 6, 0});
-//    mat.append(QVector<double>{0, 0, 0, 6, 0, 9});
-//    mat.append(QVector<double>{14, 0, 2, 0, 9, 0});
 
 
     int m = A;
@@ -49,22 +43,28 @@ void winodw::slotCalculateClicked() {
         set.insert(m);
 
     } while (m != B);
-    resLabel->setText("Distance: " + QString::number(d[m]));
 
-//    while (m) {
-//        if()
-//    }
-
-    for(auto it = path.begin(); it != path.end(); ++it) {
-        qDebug() << it.key() << ": " << it.value() << "\n";
+    QString res;
+    for(int i = B; i != A; i = path.value(i)) {
+        QMap<int, double> buf;
+        for(int j = 0; j < s; ++j){
+            if(mat[i][j] != 0){
+                buf.insert(j, d[j] + mat[i][j]);
+            }
+        }
+        int min = INF;
+        int resPos = -1;
+        for(int j : buf.keys()){
+            if(min > buf[j]){
+                min = buf[j];
+                resPos = j;
+            }
+        }
+        path[i] = resPos;
+        res.append(QString::number(i)+ ' ');
     }
-
-//    QString sPath;
-
-//    for(int i = path.value(m); i != -1; i = path.value(i)) { sPath.append(QString::number(i)); }
-
-//    qDebug() << sPath;
-
+    std::reverse(res.begin(), res.end());
+    resLabel->setText("Distance: " + QString::number(d[m]) + "\tPath: " + QString::number(A) + ' ' + res);
 }
 
 void winodw::slotSetNewMatrixSizeFromDialog() {
