@@ -12,6 +12,13 @@ void winodw::slotCalculateClicked() {
     int B = endPointB->text().toInt(&isBok);
     if (!isAok || A < 0 || !isBok || B < 0 || model1->columnCount() <= 0) return;
     QVector<QVector<double>> mat = model1->GetVectoredMat();
+//    mat.append(QVector<double>{0, 7, 9, 0, 0, 14});
+//    mat.append(QVector<double>{7, 0, 10, 15, 0, 0});
+//    mat.append(QVector<double>{9, 10, 0, 11, 0, 2});
+//    mat.append(QVector<double>{0, 15, 11, 0, 6, 0});
+//    mat.append(QVector<double>{0, 0, 0, 6, 0, 9});
+//    mat.append(QVector<double>{14, 0, 2, 0, 9, 0});
+
 
     int m = A;
     int s = mat.size();
@@ -22,31 +29,31 @@ void winodw::slotCalculateClicked() {
     set.insert(A);
     path.insert(A, -1);
 
-    while (m != B) {
+    do {
         for(int i = 0 ; i < s; ++i){
-            if(d[i] > mat[m][i] && mat[A][i] != 0 && d[i] != INF && set.find(i) == set.end()) d[i] = mat[m][i] + d[m];
-            else if(d[i] > mat[A][i] && mat[A][i] != 0 && d[i] == INF && set.find(i) == set.end()) d[i] = mat[m][i];
+            if(d[i] > mat[m][i] + d[m] && mat[m][i] != 0 && set.find(i) == set.end()) d[i] = mat[m][i] + d[m];
         }
 
         int min = INF;
         int buf{};
         for(int i = 0; i < s; ++i) {
-            if(min > d[i] && set.find(i) == set.end()){
+            if(min >= d[i] && set.find(i) == set.end()){
                 min = d[i];
                 buf = i;
             }
         }
 
-        if(){
-            path.insert(buf, path.value(m));
-        } else{
-            path.insert(buf, m);
-        }
+        path.insert(buf, m);
+
         m = buf;
         set.insert(m);
 
-    }
-    qDebug() << d[m];
+    } while (m != B);
+    resLabel->setText("Distance: " + QString::number(d[m]));
+
+//    while (m) {
+//        if()
+//    }
 
     for(auto it = path.begin(); it != path.end(); ++it) {
         qDebug() << it.key() << ": " << it.value() << "\n";
