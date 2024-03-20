@@ -13,58 +13,36 @@ void winodw::slotCalculateClicked() {
     if (!isAok || A < 0 || !isBok || B < 0 || model1->columnCount() <= 0) return;
     QVector<QVector<double>> mat = model1->GetVectoredMat();
 
-
-    int m = A;
     int s = mat.size();
-    QHash<int, int> path;
-    QVector<double> d(s, INF);
-    QSet<int> set;
-    d[A] = 0;
-    set.insert(A);
-    path.insert(A, -1);
+    QVector<bool> map(s, 0);
+    QVector<std::pair<double, std::string>> resMat(s, std::pair<double,std::string>(INF, ""));
+    resMat[A] = std::pair<double,std::string>(0, std::to_string(A)+" ");
 
-    do {
-        for(int i = 0 ; i < s; ++i){
-            if(d[i] > mat[m][i] + d[m] && mat[m][i] != 0 && set.find(i) == set.end()) d[i] = mat[m][i] + d[m];
-        }
-
-        int min = INF;
-        int buf{};
-        for(int i = 0; i < s; ++i) {
-            if(min >= d[i] && set.find(i) == set.end()){
-                min = d[i];
-                buf = i;
+    int min = A;
+    map[min] = 1;
+    while(map[B] != 1) {
+        for (int i = 0; i < s; ++i) {
+            double item = mat[min][i];
+            if(item == 0) continue;
+            else if(resMat[min].first+item < resMat[i].first){
+                resMat[i].first = resMat[min].first+item;
+                if(resMat[i].second == "") resMat[i].second += resMat[min].second+std::to_string(i)+" ";
+                else resMat[i].second += std::to_string(i)+" ";
             }
         }
 
-        path.insert(buf, m);
-
-        m = buf;
-        set.insert(m);
-
-    } while (m != B);
-
-    QString res;
-    for(int i = B; i != A; i = path.value(i)) {
-        QMap<int, double> buf;
-        for(int j = 0; j < s; ++j){
-            if(mat[i][j] != 0){
-                buf.insert(j, d[j] + mat[i][j]);
+        int minValue = INF;
+        for (int i = 0; i < s; ++i) {
+            if(!map[i]){
+                if(resMat[i].first < minValue) {
+                    minValue = resMat[i].first;
+                    min = i;
+                }
             }
         }
-        int min = INF;
-        int resPos = -1;
-        for(int j : buf.keys()){
-            if(min > buf[j]){
-                min = buf[j];
-                resPos = j;
-            }
-        }
-        path[i] = resPos;
-        res.append(QString::number(i)+ ' ');
+        map[min] = 1;
     }
-    std::reverse(res.begin(), res.end());
-    resLabel->setText("Distance: " + QString::number(d[m]) + "\tPath: " + QString::number(A) + ' ' + res);
+    qDebug() << resMat[B].second.c_str() << " " << B << ": " << resMat[B].first << Qt::endl;
 }
 
 void winodw::slotSetNewMatrixSizeFromDialog() {
