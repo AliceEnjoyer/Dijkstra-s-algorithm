@@ -26,8 +26,7 @@ void winodw::slotCalculateClicked() {
             if(item == 0) continue;
             else if(resMat[min].first+item < resMat[i].first){
                 resMat[i].first = resMat[min].first+item;
-                if(resMat[i].second == "") resMat[i].second += resMat[min].second+std::to_string(i)+" ";
-                else resMat[i].second += std::to_string(i)+" ";
+                resMat[i].second = resMat[min].second+std::to_string(i)+" ";
             }
         }
 
@@ -40,9 +39,11 @@ void winodw::slotCalculateClicked() {
                 }
             }
         }
+
         map[min] = 1;
     }
-    qDebug() << resMat[B].second.c_str() << " " << B << ": " << resMat[B].first << Qt::endl;
+    QString a = QString().fromStdString(resMat[B].second + ": " + std::to_string(resMat[B].first));
+    resLabel->setText(a);
 }
 
 void winodw::slotSetNewMatrixSizeFromDialog() {
