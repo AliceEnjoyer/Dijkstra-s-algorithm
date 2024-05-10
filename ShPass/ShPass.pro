@@ -10,6 +10,7 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
+    matrixmoddel2.cpp \
     matrixmodel.cpp \
     slots.cpp \
     winodw.cpp

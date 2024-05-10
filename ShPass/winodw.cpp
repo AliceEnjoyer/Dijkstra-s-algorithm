@@ -6,12 +6,15 @@ winodw::winodw(QWidget *parent) : QWidget(parent) {
     model1 = new MatrixModel1(0, 0);
     view->setModel(model1);
 
+    QTableView* view2 = new QTableView;
+    model2 = new MatrixModel2(1, 0);
+    view2->setModel(model2);
+
     // widgets init
     bCalculate = new QPushButton("Find path");
     bSetNewMatrixSize = new QPushButton("Set matrix size...");
     resLabel = new QLabel("Dijkstra-s-algorithm");
     startPointA = new QLineEdit;
-    endPointB = new QLineEdit;
 
 
     ///////////////////////////////////// dialog init
@@ -36,18 +39,32 @@ winodw::winodw(QWidget *parent) : QWidget(parent) {
     connect(bCalculate, &QPushButton::clicked, this,
             &winodw::slotCalculateClicked);
 
+    QMenu* mFile = new QMenu("File...");
+    mFile->addAction("Open... (ctrl+o)");
+    mFile->addAction("Save (ctrl+s)");
+    mFile->addAction("Save as... (shift+ctrl+o)");
+
+    menu = new QMenuBar;
+    menu->addMenu(mFile);
+    menu->addAction("Help...");
+    menu->addAction("About...");
+
+    bSetNewMatrixSize->setMinimumWidth(400);
+    bCalculate->setMinimumWidth(400);
+
     // layout setup
     QHBoxLayout* hbl = new QHBoxLayout;
     hbl->addWidget(new QLabel("Start point: "));
     hbl->addWidget(startPointA);
     hbl->addSpacing(15);
-    hbl->addWidget(new QLabel("End point: "));
-    hbl->addWidget(endPointB);
-    hbl->addSpacing(40);
     hbl->addWidget(bSetNewMatrixSize);
     hbl->addWidget(bCalculate);
+    QHBoxLayout* matHbl = new QHBoxLayout;
+    matHbl->addWidget(view);
+    matHbl->addWidget(view2);
     QVBoxLayout* vbl = new QVBoxLayout;
-    vbl->addWidget(view);
+    vbl->addWidget(menu);
+    vbl->addLayout(matHbl);
     vbl->addLayout(hbl);
     vbl->addWidget(resLabel);
 

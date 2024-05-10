@@ -8,15 +8,17 @@ class winodw : public QWidget {
     Q_OBJECT
 private:
     MatrixModel1* model1;
+    MatrixModel2* model2;
     QPushButton* bCalculate;
     QLineEdit* startPointA;
-    QLineEdit* endPointB;
     QLabel* resLabel;
     QPushButton* bSetNewMatrixSize;
 
     QDialog* dioSetNewMatSize;
     QLineEdit* bSetV1;
     QPushButton *enterMatSize;
+
+    QMenuBar* menu;
 public:
     winodw(QWidget *parent = nullptr);
 private slots:
