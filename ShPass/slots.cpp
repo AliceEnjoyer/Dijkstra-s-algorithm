@@ -7,11 +7,10 @@ void winodw::slotDioSetNewMatSizeShow() {
 
 void winodw::slotCalculateClicked() {
     bool isAok = true;
- //   bool isBok = true;
     int A = startPointA->text().toInt(&isAok);
-//    int B = endPointB->text().toInt(&isBok);
     if (!isAok || A < 0 || /*!isBok || B < 0 ||*/ model1->columnCount() <= 0) return;
     QVector<QVector<double>> mat = model1->GetVectoredMat();
+    graph1->setMat(mat);
 
     int s = mat.size();
     QVector<bool> map(s, 0);
@@ -21,6 +20,7 @@ void winodw::slotCalculateClicked() {
     int min = A;
     map[min] = 1;
     while(true) {
+        if(mat[min].count(0) == s) break;
         for (int i = 0; i < s; ++i) {
             double item = mat[min][i];
             if(item == 0) continue;
@@ -44,15 +44,29 @@ void winodw::slotCalculateClicked() {
         }
         if(countTrues == s) {
             break;
-        }
+        }        
 
         map[min] = 1;
     }
 
-
+    QVector<QVector<double>> matForGraph2(s, QVector<double>(s, 0));
     for (int i = 0; i < s; ++i) {
         model2->setRes(i, resMat[i].first, QString::fromStdString(resMat[i].second));
+        std::string p = resMat[i].second;
+        std::istringstream iss(p);
+        std::string vert = "";
+        std::string lastVert = "";
+        while (iss >> vert) {
+            if(lastVert != "") {
+                int v1 = std::stoi(vert);
+                int v2 = std::stoi(lastVert);
+                matForGraph2[v1][v2] = 1;
+
+            }
+            lastVert = vert;
+        }
     }
+    graph2->setMat(matForGraph2);
 
     //QString a = QString().fromStdString(resMat[B].second + ": " + std::to_string(resMat[B].first));
     //resLabel->setText(a);
@@ -64,4 +78,5 @@ void winodw::slotSetNewMatrixSizeFromDialog() {
     model1->setColumnCount(buf);
     model2->setColumnCount(buf);
 }
+
 

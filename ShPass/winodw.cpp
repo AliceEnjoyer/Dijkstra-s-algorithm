@@ -52,6 +52,9 @@ winodw::winodw(QWidget *parent) : QWidget(parent) {
     bSetNewMatrixSize->setMinimumWidth(400);
     bCalculate->setMinimumWidth(400);
 
+    graph1 = new GraphWidget();
+    graph2 = new GraphWidget();
+
     // layout setup
     QHBoxLayout* hbl = new QHBoxLayout;
     hbl->addWidget(new QLabel("Start point: "));
@@ -62,9 +65,13 @@ winodw::winodw(QWidget *parent) : QWidget(parent) {
     QHBoxLayout* matHbl = new QHBoxLayout;
     matHbl->addWidget(view);
     matHbl->addWidget(view2);
+    QHBoxLayout* graphHbl = new QHBoxLayout;
+    graphHbl->addWidget(graph1);
+    graphHbl->addWidget(graph2);
     QVBoxLayout* vbl = new QVBoxLayout;
     vbl->addWidget(menu);
     vbl->addLayout(matHbl);
+    vbl->addLayout(graphHbl);
     vbl->addLayout(hbl);
     vbl->addWidget(resLabel);
 

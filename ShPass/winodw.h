@@ -3,12 +3,15 @@
 
 #include <QtWidgets>
 #include "matrixmodel.h"
+#include "graphwidget.h"
 
 class winodw : public QWidget {
     Q_OBJECT
 private:
     MatrixModel1* model1;
     MatrixModel2* model2;
+    GraphWidget* graph1;
+    GraphWidget* graph2;
     QPushButton* bCalculate;
     QLineEdit* startPointA;
     QLabel* resLabel;
