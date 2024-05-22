@@ -1,11 +1,54 @@
 #include "winodw.h"
+#include <iostream>
 #define INF 2147483646 // infinite
 
-void winodw::slotDioSetNewMatSizeShow() {
+void window::slotDioSetNewMatSizeShow() {
     dioSetNewMatSize->show();
 }
 
-void winodw::slotCalculateClicked() {
+void window::slotMenuTriggered(QAction *a)
+{
+    if(a->text() == "Open...") {
+        try {
+            QVector<QVector<double>> mat = loadAdjacencyMatrix(QFileDialog::getOpenFileName(0, "Pick your save file", "", "*.txt"));
+            setMatSize(mat.size());
+            model1->setMat(mat);
+        } catch(...) {
+            std::cout << "ERROR\n";
+        }
+
+
+    } else if(a->text() == "Save"){
+        auto matrix = model1->GetVectoredMat();
+        std::ofstream fileO;
+        fileO.open(filePath.toStdString());
+        if (fileO.is_open()) {
+            fileO.clear();
+            for (const auto& row : matrix) {
+                for (int i = 0; i < row.size(); ++i) {
+                    fileO << row[i];
+                    if (i < row.size() - 1) {
+                        fileO << " ";
+                    }
+                }
+                fileO << "\n";
+            }
+            fileO.close();
+        } else {
+            std::cout << "Unable to open file for writing." << std::endl;
+        }
+    } else if(a->text() =="Save as..."){
+        saveAdjacencyMatrix(model1->GetVectoredMat(), QFileDialog::getSaveFileName(0, "Save file", "", "*.txt"));
+    } else if(a->text() == "Help..."){
+
+    } else if(a->text() == "About...") {
+        QMessageBox::about(0, "About", "<h1>ShPath</h1>\n<h3>This is a program written to solve the problem of searching short distances with path visualization created by Ilhin Serhii, student of KPI IASA, for coursework.<h3>");
+    }
+}
+
+
+
+void window::slotCalculateClicked() {
     bool isAok = true;
     int A = startPointA->text().toInt(&isAok);
     if (!isAok || A < 0 || /*!isBok || B < 0 ||*/ model1->columnCount() <= 0) return;
@@ -49,34 +92,65 @@ void winodw::slotCalculateClicked() {
         map[min] = 1;
     }
 
-    QVector<QVector<double>> matForGraph2(s, QVector<double>(s, 0));
-    for (int i = 0; i < s; ++i) {
-        model2->setRes(i, resMat[i].first, QString::fromStdString(resMat[i].second));
-        std::string p = resMat[i].second;
-        std::istringstream iss(p);
+    graph1->pointAllBlack();
+    QVector<bool> matForResGraph(s, 0);
+    for (const auto& i : resMat) {
+        std::istringstream iss(i.second);
         std::string vert = "";
-        std::string lastVert = "";
         while (iss >> vert) {
-            if(lastVert != "") {
-                int v1 = std::stoi(vert);
-                int v2 = std::stoi(lastVert);
-                matForGraph2[v1][v2] = 1;
-
-            }
-            lastVert = vert;
+            matForResGraph[std::stoi(vert)] = 1;
         }
     }
-    graph2->setMat(matForGraph2);
-
-    //QString a = QString().fromStdString(resMat[B].second + ": " + std::to_string(resMat[B].first));
-    //resLabel->setText(a);
+    graph1->pointFindedNodes(matForResGraph);
+    for (int i = 0; i < s; ++i) {
+        model2->setRes(i, resMat[i].first, QString::fromStdString(resMat[i].second));
+    }
 }
 
-void winodw::slotSetNewMatrixSizeFromDialog() {
-    int buf = bSetV1->text().toInt();
-    model1->setRowCount(buf);
-    model1->setColumnCount(buf);
-    model2->setColumnCount(buf);
+void window::slotSetNewMatrixSizeFromDialog() {
+    setMatSize(bSetV1->text().toInt());
+
+}
+
+inline void window::setMatSize(const int& size){
+    model1->setRowCount(size);
+    model1->setColumnCount(size);
+    model2->setColumnCount(size);
+}
+
+void window::keyPressEvent(QKeyEvent *event)
+{
+
+    if (event->key() == Qt::Key_F4) {
+        try {
+            QVector<QVector<double>> mat = loadAdjacencyMatrix(QFileDialog::getOpenFileName(this, "Pick your save file", "", "*.txt"));
+            setMatSize(mat.size());
+            model1->setMat(mat);
+        } catch (...) {
+            qDebug() << "ERROR\n";
+        }
+    } else if (event->key() == Qt::Key_F1) {
+        auto matrix = model1->GetVectoredMat();
+        std::ofstream fileO(filePath.toStdString());
+        if (fileO.is_open()) {
+            for (const auto& row : matrix) {
+                for (int i = 0; i < row.size(); ++i) {
+                    fileO << row[i];
+                    if (i < row.size() - 1) {
+                        fileO << " ";
+                    }
+                }
+                fileO << "\n";
+            }
+            fileO.close();
+        } else {
+            qDebug() << "Unable to open file for writing.";
+        }
+    } else if (event->key() == Qt::Key_F3) {
+        saveAdjacencyMatrix(model1->GetVectoredMat(), QFileDialog::getSaveFileName(this, "Save file", "", "*.txt"));
+    }
+
+    QWidget::keyPressEvent(event);
 }
 
 

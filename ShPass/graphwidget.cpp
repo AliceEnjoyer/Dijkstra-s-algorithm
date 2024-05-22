@@ -1,5 +1,6 @@
 #include "graphwidget.h"
 #include <iostream>
+#include <cmath>
 
 GraphWidget::GraphWidget(QWidget *parent) : QGraphicsView(parent) {
     scene = new QGraphicsScene(this);
@@ -8,7 +9,7 @@ GraphWidget::GraphWidget(QWidget *parent) : QGraphicsView(parent) {
 
 }
 
-void GraphWidget::setMat(QVector<QVector<double> > m) {
+void GraphWidget::setMat(QVector<QVector<double>> m) {
     adjacencyMatrix = m;
     for (int i = 0; i < adjacencyMatrix.size(); ++i) {
         for (int j = 0; j < adjacencyMatrix.size(); ++j) {
@@ -24,7 +25,7 @@ void GraphWidget::setMat(QVector<QVector<double> > m) {
 
     for (int i = 0; i < nodeCount; ++i) {
         nodes[i] = scene->addEllipse(-10, -10, 20, 20);
-        nodes[i]->setPos(QRandomGenerator::global()->bounded(200), QRandomGenerator::global()->bounded(200));
+        nodes[i]->setPos(i*34, std::cos(i*M_PI)*100+std::sin(i*M_PI/4)*40);
         nodes[i]->setFlag(QGraphicsItem::ItemIsMovable, true);
 
         nodeLabels[i] = new QGraphicsSimpleTextItem(QString::number(i));
@@ -42,6 +43,19 @@ void GraphWidget::setMat(QVector<QVector<double> > m) {
     }
 }
 
+void GraphWidget::pointAllBlack()  {
+    for (int i = 0; i < nodes.size(); ++i) {
+        nodes[i]->setPen(QPen(Qt::black));
+    }
+}
+
+void GraphWidget::pointFindedNodes(QVector<bool> v) {
+    for (int i = 0; i < v.size(); ++i) {
+        if(v[i]) nodes[i]->setPen(QPen(Qt::green));
+        else nodes[i]->setPen(QPen(Qt::red));
+    }
+}
+
 void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
     QGraphicsView::mouseMoveEvent(event);
 
@@ -50,7 +64,6 @@ void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
         for (int j = i + 1; j < nodes.size(); ++j) {
 
             QGraphicsLineItem *edge = edges.value(QPair<int, int>(i, j), nullptr);
-            std::cout << "esrikhgoirew" << std::endl; // когда матрица сумежностей равняеться нулевой, то graph2 сбоит и крашит програму
             if (edge) {
                 QPointF p1 = nodes[i]->scenePos();
                 QPointF p2 = nodes[j]->scenePos();

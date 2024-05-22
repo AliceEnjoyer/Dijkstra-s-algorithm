@@ -19,7 +19,7 @@ Qt::ItemFlags MatrixModel1::flags( const QModelIndex& index ) const {
 
 bool MatrixModel1::setData( const QModelIndex& index, const QVariant& value, int role ) {
     if( !index.isValid() || role != Qt::EditRole || index.row() > rows || index.column() > cols) return false;
-    int buf = value.toDouble();
+    double buf = value.toDouble();
     if(buf < 0) buf *= -1;
     mat[index] = buf;
     emit dataChanged(index, index);
@@ -72,4 +72,12 @@ QVector<QVector<double>> MatrixModel1::GetVectoredMat() {
         vecMat.push_back(buf);
     }
     return vecMat;
+}
+
+void MatrixModel1::setMat(const QVector<QVector<double> > &matrix) {
+    for (int i = 0; i < matrix.size(); ++i) {
+        for (int j = 0; j < matrix.size(); ++j){
+            mat[index(i, j)] = matrix[i][j];
+        }
+    }
 }

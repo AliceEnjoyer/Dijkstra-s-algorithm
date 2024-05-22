@@ -24,6 +24,7 @@ public:
     void setColumnCount (int);
 
     QVector<QVector<double>> GetVectoredMat();
+    void setMat(const QVector<QVector<double>>& mat);
 
 private:
     QHash<QModelIndex, double> mat;

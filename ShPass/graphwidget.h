@@ -19,7 +19,8 @@ class GraphWidget : public QGraphicsView {
 public:
     GraphWidget(QWidget *parent = nullptr);
     void setMat(QVector<QVector<double>> m);
-
+    void pointFindedNodes(QVector<bool> v);
+    void pointAllBlack();
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
 
