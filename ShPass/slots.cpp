@@ -10,13 +10,18 @@ void window::slotMenuTriggered(QAction *a)
 {
     if(a->text() == "Open...") {
         try {
-            QVector<QVector<double>> mat = loadAdjacencyMatrix(QFileDialog::getOpenFileName(0, "Pick your save file", "", "*.txt"));
+            bool isOk;
+            QVector<QVector<double>> mat = loadAdjacencyMatrix(QFileDialog::getOpenFileName(this, "Pick your save file", "", "*.txt"), isOk);
+            if(!isOk) {
+                return;
+            }
             setMatSize(mat.size());
             model1->setMat(mat);
-        } catch(...) {
-            std::cout << "ERROR\n";
+        } catch (...) {
+            resLabel->setText("ERROR");
         }
-
+        QApplication::beep();
+        resLabel->setText("File Loaded!");
 
     } else if(a->text() == "Save"){
         auto matrix = model1->GetVectoredMat();
@@ -35,14 +40,27 @@ void window::slotMenuTriggered(QAction *a)
             }
             fileO.close();
         } else {
-            std::cout << "Unable to open file for writing." << std::endl;
+            resLabel->setText("Unable to open file for writing.");
         }
+        QApplication::beep();
+        resLabel->setText("File saved!");
     } else if(a->text() =="Save as..."){
         saveAdjacencyMatrix(model1->GetVectoredMat(), QFileDialog::getSaveFileName(0, "Save file", "", "*.txt"));
+        QApplication::beep();
+        resLabel->setText("File saved!");
     } else if(a->text() == "Help..."){
 
     } else if(a->text() == "About...") {
-        QMessageBox::about(0, "About", "<h1>ShPath</h1>\n<h3>This is a program written to solve the problem of searching short distances with path visualization created by Ilhin Serhii, student of KPI IASA, for coursework.<h3>");
+        QMessageBox::about(0, "About", "<h1>ShPath</h1>\n<h3>This is a program written to solve the problem of searching short distances using Dijkstra`s algorithm with path visualization created by Ilhin Serhii, student of KPI IASA, for coursework.<h3>");
+    } else if(a->text() == "Clear") {
+        if(QMessageBox::warning(0, "Warning", "Do you really want to clear adjacency matrix?",
+                                QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes){
+            model1->clear();
+            model2->clear();
+            graph1->clear();
+            QApplication::beep();
+            resLabel->setText("Adjacency matrix cleared");
+        }
     }
 }
 
@@ -51,45 +69,58 @@ void window::slotMenuTriggered(QAction *a)
 void window::slotCalculateClicked() {
     bool isAok = true;
     int A = startPointA->text().toInt(&isAok);
-    if (!isAok || A < 0 || /*!isBok || B < 0 ||*/ model1->columnCount() <= 0) return;
     QVector<QVector<double>> mat = model1->GetVectoredMat();
+    int s = mat.size();
+    if(s == 0){
+        QApplication::beep();
+        QMessageBox::information(0, "Error message", "Your adjacency matrix is empty");
+        return;
+    }
+    if(!isAok || A < 0){
+        QApplication::beep();
+        QMessageBox::information(0, "Error message", "You must enter a positive integer as start vertex");
+        return;
+    }
+    if(A>=s){
+        QApplication::beep();
+        QMessageBox::information(0, "Error message", QString::fromStdString("your graph has "+std::to_string(s)+" vertices, but you enter vertex with number "+std::to_string(A)));
+        return;
+    }
+    if(model1->columnCount() <= 0){
+        QApplication::beep();
+        QMessageBox::information(0, "Error message", "Unexpected error");
+        return;
+    }
+
     graph1->setMat(mat);
 
-    int s = mat.size();
     QVector<bool> map(s, 0);
     QVector<std::pair<double, std::string>> resMat(s, std::pair<double,std::string>(INF, ""));
     resMat[A] = std::pair<double,std::string>(0, std::to_string(A)+" ");
 
-    int min = A;
-    map[min] = 1;
-    while(true) {
-        if(mat[min].count(0) == s) break;
+    while (true) {
+        int min = -1;
+        double minValue = INF;
+        for (int i = 0; i < s; ++i) {
+            if (!map[i] && resMat[i].first < minValue) {
+                minValue = resMat[i].first;
+                min = i;
+            }
+        }
+
+        // Якщо не знайшли вузла, виходимо з циклу
+        if (min == -1) break;
+
+        map[min] = true;
+
+        // Оновлення мінімальних відстаней до сусідніх вузлів
         for (int i = 0; i < s; ++i) {
             double item = mat[min][i];
-            if(item == 0) continue;
-            else if(resMat[min].first+item < resMat[i].first){
-                resMat[i].first = resMat[min].first+item;
-                resMat[i].second = resMat[min].second+std::to_string(i)+" ";
+            if (item != 0 && !map[i] && resMat[min].first + item < resMat[i].first) {
+                resMat[i].first = resMat[min].first + item;
+                resMat[i].second = resMat[min].second + std::to_string(i) + " ";
             }
         }
-
-        int minValue = INF;
-        int countTrues = 0;
-        for (int i = 0; i < s; ++i) {
-            if(!map[i]){
-                if(resMat[i].first < minValue) {
-                    minValue = resMat[i].first;
-                    min = i;
-                }
-            } else {
-                ++countTrues;
-            }
-        }
-        if(countTrues == s) {
-            break;
-        }        
-
-        map[min] = 1;
     }
 
     graph1->pointAllBlack();
@@ -105,6 +136,9 @@ void window::slotCalculateClicked() {
     for (int i = 0; i < s; ++i) {
         model2->setRes(i, resMat[i].first, QString::fromStdString(resMat[i].second));
     }
+
+    QApplication::beep();
+    resLabel->setText("Matrix has been calculated!!");
 }
 
 void window::slotSetNewMatrixSizeFromDialog() {
@@ -113,23 +147,26 @@ void window::slotSetNewMatrixSizeFromDialog() {
 }
 
 inline void window::setMatSize(const int& size){
-    model1->setRowCount(size);
-    model1->setColumnCount(size);
+    model1->setSize(size);
     model2->setColumnCount(size);
 }
 
 void window::keyPressEvent(QKeyEvent *event)
 {
-
-    if (event->key() == Qt::Key_F4) {
+    if (event->key() == Qt::Key_F6) {
         try {
-            QVector<QVector<double>> mat = loadAdjacencyMatrix(QFileDialog::getOpenFileName(this, "Pick your save file", "", "*.txt"));
+            bool isOk;
+            QVector<QVector<double>> mat = loadAdjacencyMatrix(QFileDialog::getOpenFileName(this, "Pick your save file", "", "*.txt"), isOk);
+            if(!isOk) {
+                return;
+            }
             setMatSize(mat.size());
             model1->setMat(mat);
         } catch (...) {
-            qDebug() << "ERROR\n";
+            resLabel->setText("ERROR");
         }
-    } else if (event->key() == Qt::Key_F1) {
+        QApplication::beep();
+    } else if (event->key() == Qt::Key_F2) {
         auto matrix = model1->GetVectoredMat();
         std::ofstream fileO(filePath.toStdString());
         if (fileO.is_open()) {
@@ -144,10 +181,12 @@ void window::keyPressEvent(QKeyEvent *event)
             }
             fileO.close();
         } else {
-            qDebug() << "Unable to open file for writing.";
+            resLabel->setText("Unable to open file for writing.");
         }
-    } else if (event->key() == Qt::Key_F3) {
+        QApplication::beep();
+    } else if (event->key() == Qt::Key_F5) {
         saveAdjacencyMatrix(model1->GetVectoredMat(), QFileDialog::getSaveFileName(this, "Save file", "", "*.txt"));
+        QApplication::beep();
     }
 
     QWidget::keyPressEvent(event);

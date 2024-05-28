@@ -33,7 +33,7 @@ public:
     window(QWidget *parent = nullptr);
 protected:
     void saveAdjacencyMatrix(const QVector<QVector<double>>& matrix, const QString& filename);
-    QVector<QVector<double> > loadAdjacencyMatrix(const QString &filename);
+    QVector<QVector<double> > loadAdjacencyMatrix(const QString &filename, bool &isOk);
     inline void setMatSize(const int &size);
 
     void keyPressEvent(QKeyEvent *event) override;

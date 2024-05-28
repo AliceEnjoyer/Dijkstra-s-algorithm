@@ -55,6 +55,12 @@ QVector<QString> MatrixModel2::GetVectoredMat() {
     return v;
 }
 
+void MatrixModel2::clear()
+{
+    mat.clear();
+    setColumnCount(0);
+}
+
 void MatrixModel2::setRes(int Vertice, int pathLenght, QString path) {
     QModelIndex ind = index(0, Vertice);
     beginInsertColumns(ind,0, 1);

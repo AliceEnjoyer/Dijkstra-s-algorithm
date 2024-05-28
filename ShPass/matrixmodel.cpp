@@ -8,7 +8,7 @@ QVariant MatrixModel1::data(const QModelIndex &index, int role) const {
     return (role == Qt::DisplayRole || role == Qt::EditRole) ? mat.value(index, 0) : QVariant();
 }
 
-int MatrixModel1::data(int i, int j) const {
+QVariant MatrixModel1::data(int i, int j) const {
     return mat.value(index(i, j));
 }
 
@@ -19,9 +19,19 @@ Qt::ItemFlags MatrixModel1::flags( const QModelIndex& index ) const {
 
 bool MatrixModel1::setData( const QModelIndex& index, const QVariant& value, int role ) {
     if( !index.isValid() || role != Qt::EditRole || index.row() > rows || index.column() > cols) return false;
-    double buf = value.toDouble();
-    if(buf < 0) buf *= -1;
-    mat[index] = buf;
+
+    QString toStr = value.toString();
+    if(toStr == "") return false;
+    bool isOk;
+    double buf = toStr.toDouble(&isOk);
+    if(!isOk || buf < 0) {
+        QMessageBox::information(0, "Error", "You must write some positive integer (like 3) or positive floating point number using dot(like 3.14)");
+        return false;
+    }
+
+    VectoredMat[index.row()][index.column()] = buf;
+
+    mat[index] = toStr;
     emit dataChanged(index, index);
     return true;
 }
@@ -42,19 +52,23 @@ QVariant MatrixModel1::headerData (int section, Qt::Orientation orientation, int
     return QVariant();
 }
 
-void MatrixModel1::setRowCount(int rowCount) {
+void MatrixModel1::setSize(int rowCount) {
     this->rows = rowCount;
-    emit layoutChanged();
-}
-void MatrixModel1::setColumnCount(int colCount) {
-    this->cols = colCount;
+    this->cols = rowCount;
+    VectoredMat = QVector<QVector<double>>(rowCount, QVector<double>(rowCount, 0));
     emit layoutChanged();
 }
 
-void MatrixModel1::setData(int i, int j, const double& data) {
+void MatrixModel1::clear()
+{
+    mat.clear();
+    VectoredMat.clear();
+}
+
+void MatrixModel1::setData(int i, int j, const QVariant& data) {
     QModelIndex ind = index(i, j);
     beginInsertColumns(ind,0, 1);
-    mat.insert(ind, data);
+    mat.insert(ind, data.toString());
     endInsertColumns();
 }
 
@@ -62,22 +76,18 @@ void MatrixModel1::clearData() {
     beginResetModel();
     mat.clear();
     endResetModel();
+    setSize(0);
 }
 
 QVector<QVector<double>> MatrixModel1::GetVectoredMat() {
-    QVector<QVector<double>> vecMat;
-    for (int i = 0 ; i < rows ; ++i) {
-        QVector<double> buf;
-        for(int j = 0 ; j < cols ; ++j) { buf.push_back(mat.value(index(i, j))); }
-        vecMat.push_back(buf);
-    }
-    return vecMat;
+    return VectoredMat;
 }
 
 void MatrixModel1::setMat(const QVector<QVector<double> > &matrix) {
-    for (int i = 0; i < matrix.size(); ++i) {
-        for (int j = 0; j < matrix.size(); ++j){
-            mat[index(i, j)] = matrix[i][j];
+    for (int i = 0; i < VectoredMat.size(); ++i) {
+        for (int j = 0; j < VectoredMat.size(); ++j){
+            mat[index(i, j)] = QString::fromStdString(std::to_string(matrix[i][j]));
+            VectoredMat[i][j] = matrix[i][j];
         }
     }
 }

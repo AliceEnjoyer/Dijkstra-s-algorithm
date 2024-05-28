@@ -2,20 +2,27 @@
 #include <iostream>
 
 window::window(QWidget *parent) : QWidget(parent) {
+
     // model init
     QTableView* view = new QTableView;
     model1 = new MatrixModel1(0, 0);
     view->setModel(model1);
+    view->setToolTip("It is an adjacency matrix");
 
     QTableView* view2 = new QTableView;
     model2 = new MatrixModel2(1, 0);
     view2->setModel(model2);
+    view2->setToolTip("It is a result row matrix");
 
     // widgets init
     bCalculate = new QPushButton("Find path");
-    bSetNewMatrixSize = new QPushButton("Set matrix size...");
+    bCalculate->setToolTip("Press this button to calculate set adjacency matrix");
+    bSetNewMatrixSize = new QPushButton("Set adjacency matrix size...");
+    bSetNewMatrixSize->setToolTip("Press this button to set adjacency matrix size");
     resLabel = new QLabel("Dijkstra-s-algorithm");
+    resLabel->setToolTip("This label is for showing program status");
     startPointA = new QLineEdit;
+    startPointA->setToolTip("Enter there a start vertex from wich algorithm will calculate a path to other vertices");
 
 
     ///////////////////////////////////// dialog init
@@ -40,10 +47,12 @@ window::window(QWidget *parent) : QWidget(parent) {
     connect(bCalculate, &QPushButton::clicked, this,
             &window::slotCalculateClicked);
 
-    QMenu* mFile = new QMenu("File...");
-    mFile->addAction("Open...", Qt::Key_F4);
-    mFile->addAction("Save", Qt::Key_F1);
-    mFile->addAction("Save as...", Qt::Key_F3);
+    QMenu* mFile = new QMenu("File");
+    mFile->addAction("Open...", Qt::Key_F6);
+    mFile->addAction("Save", Qt::Key_F2);
+    mFile->addAction("Save as...", Qt::Key_F5);
+    mFile->addSeparator();
+    mFile->addAction("Clear");
 
 
     menu = new QMenuBar;
@@ -53,11 +62,11 @@ window::window(QWidget *parent) : QWidget(parent) {
 
     connect(menu, &QMenuBar::triggered, this, &window::slotMenuTriggered);
 
-    bSetNewMatrixSize->setMinimumWidth(400);
-    bCalculate->setMinimumWidth(400);
+    bSetNewMatrixSize->setMinimumWidth(350);
+    bCalculate->setMinimumWidth(350);
 
     graph1 = new GraphWidget();
-    //graph2 = new GraphWidget();
+    graph1->setToolTip("It is a graph of your adjacency matrix");
 
     // layout setup
     QHBoxLayout* hbl = new QHBoxLayout;
@@ -100,20 +109,24 @@ void window::saveAdjacencyMatrix(const QVector<QVector<double> > &matrix, const 
         }
         filePath = filename;
         fileO.close();
+
+        resLabel->setText("File saved.");
     } else {
-        std::cerr << "Unable to open file for writing." << std::endl;
+        resLabel->setText("Unable to open file for writing.");
     }
 }
 
-QVector<QVector<double>> window::loadAdjacencyMatrix(const QString& filename) {
+QVector<QVector<double>> window::loadAdjacencyMatrix(const QString& filename, bool& isOk) {
     QVector<QVector<double>> matrix;
     std::ifstream fileI;
     fileI.open(filename.toStdString());
     std::string line;
 
+    int lineCount = 0;
     if (fileI.is_open()) {
         try {
             while (std::getline(fileI, line)) {
+                ++lineCount;
                 std::istringstream stream(line);
                 QVector<double> row;
                 std::string value;
@@ -126,16 +139,22 @@ QVector<QVector<double>> window::loadAdjacencyMatrix(const QString& filename) {
 //            if(fileO.is_open()) fileO.close();
 //            fileO.open(filename.toStdString());
             filePath = filename;
+            resLabel->setText("File loaded.");
         } catch (...) {
-            std::cout << "Unable to read file for reading." << std::endl;
+            QApplication::beep();
+            QMessageBox::information(0, "Error file reading", QString::fromStdString("File has reading error on " + std::to_string(lineCount) + " line"));
+            resLabel->setText("Try fix your previous file or open another file");
+            isOk = false;
+            matrix.clear();
         }
 
         fileI.close();
 
     } else {
-        std::cout << "Unable to open file for reading." << std::endl;
+        resLabel->setText("Unable to open file for reading.");
     }
 
+    isOk = true;
     return matrix;
 }
 

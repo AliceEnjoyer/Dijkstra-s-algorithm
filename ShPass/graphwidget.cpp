@@ -49,6 +49,11 @@ void GraphWidget::pointAllBlack()  {
     }
 }
 
+void GraphWidget::clear()
+{
+    scene->clear();
+}
+
 void GraphWidget::pointFindedNodes(QVector<bool> v) {
     for (int i = 0; i < v.size(); ++i) {
         if(v[i]) nodes[i]->setPen(QPen(Qt::green));
