@@ -108,12 +108,10 @@ void window::slotCalculateClicked() {
             }
         }
 
-        // Якщо не знайшли вузла, виходимо з циклу
         if (min == -1) break;
 
         map[min] = true;
 
-        // Оновлення мінімальних відстаней до сусідніх вузлів
         for (int i = 0; i < s; ++i) {
             double item = mat[min][i];
             if (item != 0 && !map[i] && resMat[min].first + item < resMat[i].first) {
