@@ -49,7 +49,7 @@ void window::slotMenuTriggered(QAction *a)
         QApplication::beep();
         resLabel->setText("File saved!");
     } else if(a->text() == "Help..."){
-
+        QDesktopServices::openUrl(QUrl::fromLocalFile("Help....docx"));
     } else if(a->text() == "About...") {
         QMessageBox::about(0, "About", "<h1>ShPath</h1>\n<h3>This is a program written to solve the problem of searching short distances using Dijkstra`s algorithm with path visualization created by Ilhin Serhii, student of KPI IASA, for coursework.<h3>");
     } else if(a->text() == "Clear") {

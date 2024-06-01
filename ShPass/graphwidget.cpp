@@ -5,8 +5,6 @@
 GraphWidget::GraphWidget(QWidget *parent) : QGraphicsView(parent) {
     scene = new QGraphicsScene(this);
     setScene(scene);
-
-
 }
 
 void GraphWidget::setMat(QVector<QVector<double>> m) {
@@ -28,15 +26,16 @@ void GraphWidget::setMat(QVector<QVector<double>> m) {
         nodes[i]->setPos(i*34, std::cos(i*M_PI)*100+std::sin(i*M_PI/4)*40);
         nodes[i]->setFlag(QGraphicsItem::ItemIsMovable, true);
 
-        nodeLabels[i] = new QGraphicsSimpleTextItem(QString::number(i));
+        nodeLabels[i] = new QGraphicsSimpleTextItem((QString::number(i)));
         nodeLabels[i]->setPos(nodes[i]->pos() - QPointF(5, 5));
+        nodeLabels[i]->setBrush(QBrush(QColor(92, 39, 254)));
         scene->addItem(nodeLabels[i]);
     }
 
     for (int i = 0; i < nodeCount; ++i) {
         for (int j = i + 1; j < nodeCount; ++j) {
             if (adjacencyMatrix[i][j] != 0) {
-                QGraphicsLineItem *edge = scene->addLine(nodes[i]->pos().x(), nodes[i]->pos().y(), nodes[j]->pos().x(), nodes[j]->pos().y(), QPen(Qt::black, 1));
+                QGraphicsLineItem *edge = scene->addLine(nodes[i]->pos().x(), nodes[i]->pos().y(), nodes[j]->pos().x(), nodes[j]->pos().y(), QPen(QColor(82, 255, 255), 1));
                 edges[QPair<int, int>(i, j)] = edge;
             }
         }
